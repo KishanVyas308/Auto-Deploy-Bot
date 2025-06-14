@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRecoilState } from 'recoil';
+import { Link } from 'react-router-dom';
 import { projectsState, deploymentsState } from '../store/atoms';
 import { useAuth } from '../hooks/useAuth';
 import Button from '../components/ui/Button';
@@ -153,7 +154,7 @@ const Dashboard: React.FC = () => {
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">Successful Deployments</p>
                   <p className="text-2xl font-semibold text-gray-900">
-                    {deployments.deployments.filter(d => d.status === 'SUCCESS').length}
+                    {deployments.deployments.filter(d => d.status === 'ACCEPTED').length}
                   </p>
                 </div>
               </div>
@@ -205,14 +206,15 @@ const Dashboard: React.FC = () => {
                             {project.webhookConnected ? 'Connected' : 'Not Connected'}
                           </span>
                         </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
+                      </div>                      <div className="flex items-center space-x-2">
                         <span className="px-2 py-1 text-xs font-medium rounded-full text-blue-600 bg-blue-100">
                           Active
                         </span>
-                        <Button size="sm" variant="outline">
-                          Manage
-                        </Button>
+                        <Link to={`/project/${project.id}`}>
+                          <Button size="sm" variant="outline">
+                            Manage
+                          </Button>
+                        </Link>
                       </div>
                     </div>
                   </div>

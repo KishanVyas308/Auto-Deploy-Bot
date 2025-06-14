@@ -1,8 +1,9 @@
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import Register from './pages/auth/Register'
-import Login from './pages/auth/Login'
+import Login from './pages/auth/Rogin'
 import Dashboard from './pages/Dashboard'
+import ProjectDetail from './pages/ProjectDetail'
 import ProtectedRoute from './components/ProtectedRoute'
 import AuthInitializer from './components/AuthInitializer'
 
@@ -20,6 +21,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/project/:id" 
+              element={
+                <ProtectedRoute>
+                  <ProjectDetail />
                 </ProtectedRoute>
               } 
             />
