@@ -25,7 +25,7 @@ app.use(express.json());
 app.use(API_PREFIX + '/auth', authRouter);
 app.use(API_PREFIX + '/projects', projectRouter);
 app.use(API_PREFIX + '/deployments', deploymentRouter);
-app.use('/api/webhook', webhookRouter);
+app.use(API_PREFIX + '/webhook', webhookRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

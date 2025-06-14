@@ -87,7 +87,7 @@ export const createProject = async (req: Request, res: Response): Promise<void> 
     });    res.status(201).json({ 
       message: "Project created successfully", 
       project,
-      webhookUrl: `${process.env.WEBHOOK_BASE_URL || 'http://localhost:4000'}/api/webhook/github/${project.id}`,
+      webhookUrl: `${process.env.WEBHOOK_BASE_URL || 'http://localhost:3000'}/api/v1/webhook/github/${project.id}`,
       webhookSecret: webhookSecret
     });
   } catch (error) {
@@ -184,6 +184,91 @@ export const getProjectDeployments = async (req: Request, res: Response): Promis
     res.status(200).json({ deployments });
   } catch (error) {
     console.error("Get deployments error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Regenerate webhook secret
+export const regenerateWebhookSecret = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const userId = (req as any).user.id;
+
+    const existingProject = await prisma.project.findFirst({
+      where: { id, userId }
+    });
+
+    if (!existingProject) {
+      res.status(404).json({ message: "Project not found" });
+      return;
+    }
+
+    // Generate new webhook secret
+    const newWebhookSecret = crypto.randomBytes(32).toString('hex');
+
+    const project = await prisma.project.update({
+      where: { id },
+      data: {
+        webhookSecret: newWebhookSecret,
+        webhookConnected: false, // Reset connection status
+        updatedAt: new Date()
+      }
+    });
+
+    res.status(200).json({ 
+      message: "Webhook secret regenerated successfully", 
+      webhookSecret: newWebhookSecret,
+      webhookUrl: `${process.env.WEBHOOK_BASE_URL || 'http://localhost:3000'}/api/webhook/github/${project.id}`
+    });
+  } catch (error) {
+    console.error("Regenerate webhook secret error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Trigger manual deployment
+export const triggerManualDeployment = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { commitHash, commitMsg } = req.body;
+    const userId = (req as any).user.id;
+
+    const project = await prisma.project.findFirst({
+      where: { id, userId }
+    });
+
+    if (!project) {
+      res.status(404).json({ message: "Project not found" });
+      return;
+    }
+
+    // Create deployment record
+    const deployment = await prisma.deployment.create({
+      data: {
+        projectId: id,
+        userId,
+        commitHash: commitHash || 'manual-deploy',
+        commitMsg: commitMsg || 'Manual deployment trigger',
+        status: "PENDING",
+        triggeredBy: "manual"
+      }
+    });
+
+    // Here you would integrate with your actual deployment system
+    // For now, we'll simulate accepting the deployment
+    setTimeout(async () => {
+      await prisma.deployment.update({
+        where: { id: deployment.id },
+        data: { status: "ACCEPTED" }
+      });
+    }, 1000);
+
+    res.status(201).json({ 
+      message: "Manual deployment triggered successfully", 
+      deployment 
+    });
+  } catch (error) {
+    console.error("Trigger manual deployment error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };

@@ -5,7 +5,9 @@ import {
   createProject,
   updateProject,
   deleteProject,
-  getProjectDeployments
+  getProjectDeployments,
+  regenerateWebhookSecret,
+  triggerManualDeployment
 } from "../controllers/projectController";
 import { authenticateToken } from "../middleware";
 
@@ -20,5 +22,7 @@ projectRouter.post("/", createProject);
 projectRouter.put("/:id", updateProject);
 projectRouter.delete("/:id", deleteProject);
 projectRouter.get("/:id/deployments", getProjectDeployments);
+projectRouter.post("/:id/regenerate-webhook", regenerateWebhookSecret);
+projectRouter.post("/:id/deploy", triggerManualDeployment);
 
 export default projectRouter;
