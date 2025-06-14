@@ -4,52 +4,37 @@ import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import Alert from '../../components/ui/Alert';
 import { useAuth } from '../../hooks/useAuth';
-import type { RegisterData } from '../../services/authService';
+import type { LoginData } from '../../services/authService';
 
-interface RegisterFormData extends RegisterData {
-  confirmPassword: string;
-}
-
-const Register: React.FC = () => {
-  const [formData, setFormData] = useState<RegisterFormData>({
+const Login: React.FC = () => {
+  const [formData, setFormData] = useState<LoginData>({
     username: '',
     password: '',
-    confirmPassword: '',
   });
-  const [errors, setErrors] = useState<Partial<RegisterFormData>>({});
+  const [errors, setErrors] = useState<Partial<LoginData>>({});
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [loading, setLoading] = useState(false);
-  const { register: authRegister } = useAuth();
+  const { login: authLogin } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     // Clear error when user starts typing
-    if (errors[name as keyof RegisterFormData]) {
+    if (errors[name as keyof LoginData]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<RegisterFormData> = {};
+    const newErrors: Partial<LoginData> = {};
 
     if (!formData.username.trim()) {
       newErrors.username = 'Username is required';
-    } else if (formData.username.length < 3) {
-      newErrors.username = 'Username must be at least 3 characters long';
     }
 
     if (!formData.password) {
       newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters long';
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
     }
 
     setErrors(newErrors);
@@ -65,8 +50,7 @@ const Register: React.FC = () => {
     setLoading(true);
 
     try {
-      const { confirmPassword, ...registerData } = formData;
-      const response = await authRegister(registerData);
+      const response = await authLogin(formData);
       setAlert({ type: 'success', message: response.message });
       
       // Redirect to dashboard
@@ -76,7 +60,7 @@ const Register: React.FC = () => {
     } catch (error) {
       setAlert({
         type: 'error',
-        message: error instanceof Error ? error.message : 'Registration failed'
+        message: error instanceof Error ? error.message : 'Login failed'
       });
     } finally {
       setLoading(false);
@@ -88,10 +72,10 @@ const Register: React.FC = () => {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create your account
+            Sign in to your account
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Join Auto Deploy Bot today
+            Welcome to Auto Deploy Bot
           </p>
         </div>
         
@@ -112,7 +96,7 @@ const Register: React.FC = () => {
               value={formData.username}
               onChange={handleChange}
               error={errors.username}
-              placeholder="Choose a username"
+              placeholder="Enter your username"
               required
             />
             
@@ -123,18 +107,7 @@ const Register: React.FC = () => {
               value={formData.password}
               onChange={handleChange}
               error={errors.password}
-              placeholder="Create a password"
-              required
-            />
-            
-            <Input
-              label="Confirm Password"
-              name="confirmPassword"
-              type="password"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              error={errors.confirmPassword}
-              placeholder="Confirm your password"
+              placeholder="Enter your password"
               required
             />
           </div>
@@ -146,18 +119,18 @@ const Register: React.FC = () => {
               className="w-full"
               size="lg"
             >
-              Create Account
+              Sign in
             </Button>
           </div>
 
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              Already have an account?{' '}
+              Don't have an account?{' '}
               <Link
-                to="/login"
+                to="/register"
                 className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
               >
-                Sign in here
+                Sign up here
               </Link>
             </p>
           </div>
@@ -167,4 +140,4 @@ const Register: React.FC = () => {
   );
 };
 
-export default Register;
+export default Login;
